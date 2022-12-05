@@ -19,5 +19,8 @@
     "message_randomly_time": 1800,
     "admin": ":maxle!maxle@user/maxle",
     "command_key": "~",
-    "openai_api_key": "asdf"
+    "openai_api_key": "asdf",
+    "model": "text-davinci-003",
+    "history_to_keep": 1000,
+    "max_tokens": 128
 }

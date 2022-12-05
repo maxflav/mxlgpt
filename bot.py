@@ -14,8 +14,6 @@ from conf import config
 irc = IRC()
 irc.connect()
 
-HISTORY_TO_KEEP = 500
-
 botnick = config.get('irc', 'nick')
 openai.api_key = config.get('openai_api_key')
 
@@ -30,10 +28,10 @@ def generate_reply(prompt):
 
     print(f"Getting response to prompt: {prompt}")
     response = openai.Completion.create(
-      model="text-davinci-003",
+      model=config.get('model') or "text-davinci-003",
       prompt=prompt,
       temperature=0.7,
-      max_tokens=64,
+      max_tokens=config.get('max_tokens') or 64,
       top_p=1,
       frequency_penalty=0,
       presence_penalty=0,
@@ -56,7 +54,8 @@ def message_handler(username, channel, message, full_user):
         message_history[channel] = ""
     timestamp_str = timestamp()
     message_history[channel] += f"[{username}] ({timestamp_str}) {message}\n"
-    message_history[channel] = message_history[channel][-1 * HISTORY_TO_KEEP:]
+    history_to_keep = config.get('history_to_keep') or 500
+    message_history[channel] = message_history[channel][-1 * history_to_keep:]
 
     global count_since_response
     if not should_respond(message):
@@ -143,7 +142,8 @@ def try_random_message():
             if message is not None:
                 irc.send_to_channel(channel, message)
                 message_history[channel] += message + "\n"
-                message_history[channel] = message_history[channel][-1 * HISTORY_TO_KEEP:]
+                history_to_keep = config.get('history_to_keep') or 500
+                message_history[channel] = message_history[channel][-1 * history_to_keep:]
 
         count_since_response = 0
         last_response_time = int(time.time())
