@@ -28,6 +28,7 @@ def generate_reply(prompt):
     timestamp_str = timestamp()
     prompt += "[{botnick}] ({timestamp_str}) "
 
+    print("Getting response to prompt: {prompt}")
     response = openai.Completion.create(
       model="text-davinci-003",
       prompt=prompt,
@@ -38,7 +39,12 @@ def generate_reply(prompt):
       presence_penalty=0,
       stop=["\n"],
     )
-    return response
+    print(response)
+    try:
+        return response['choices'][0]['text']
+    except exception:
+        traceback.print_exc()
+        return None
 
 def timestamp():
     return datetime.datetime.now().strftime("%H:%M:%S")
@@ -57,6 +63,8 @@ def message_handler(username, channel, message, full_user):
         return
 
     reply = generate_reply(message_history[channel])
+    if reply is None:
+        return
     if botnick.upper() in message.upper():
         reply = username + ": " + reply
     irc.send_to_channel(channel, reply)
@@ -130,9 +138,10 @@ def try_random_message():
             if channel not in message_history or len(message_history[channel]) < 10:
                 continue
             message = generate_reply(message_history[channel])
-            irc.send_to_channel(channel, message)
-            message_history[channel] += message + "\n"
-            message_history[channel] = message_history[channel][-1 * HISTORY_TO_KEEP:]
+            if message is not None:
+                irc.send_to_channel(channel, message)
+                message_history[channel] += message + "\n"
+                message_history[channel] = message_history[channel][-1 * HISTORY_TO_KEEP:]
 
         count_since_response = 0
         last_response_time = int(time.time())
