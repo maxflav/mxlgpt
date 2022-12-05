@@ -26,9 +26,9 @@ message_history = {}
 
 def generate_reply(prompt):
     timestamp_str = timestamp()
-    prompt += "[{botnick}] ({timestamp_str}) "
+    prompt += f"[{botnick}] ({timestamp_str}) "
 
-    print("Getting response to prompt: {prompt}")
+    print(f"Getting response to prompt: {prompt}")
     response = openai.Completion.create(
       model="text-davinci-003",
       prompt=prompt,
@@ -54,7 +54,7 @@ def message_handler(username, channel, message, full_user):
     if channel not in message_history:
         message_history[channel] = ""
     timestamp_str = timestamp()
-    message_history[channel] += "[{username}] ({timestamp_str}) {message}\n"
+    message_history[channel] += f"[{username}] ({timestamp_str}) {message}\n"
     message_history[channel] = message_history[channel][-1 * HISTORY_TO_KEEP:]
 
     global count_since_response
@@ -68,7 +68,8 @@ def message_handler(username, channel, message, full_user):
     if botnick.upper() in message.upper():
         reply = username + ": " + reply
     irc.send_to_channel(channel, reply)
-    message_history[channel] += reply + "\n"
+
+    message_history[channel] += f"[{botnick}] ({timestamp_str}) {reply}\n"
 
     count_since_response = 0
     last_response_time = int(time.time())
