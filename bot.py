@@ -49,16 +49,20 @@ def timestamp():
     return datetime.datetime.now().strftime("%H:%M:%S")
 
 def message_handler(username, channel, message, full_user):
+    if channel == botnick:
+        channel = username
+
     global message_history
     if channel not in message_history:
         message_history[channel] = ""
+
     timestamp_str = timestamp()
     message_history[channel] += f"[{username}] ({timestamp_str}) {message}\n"
     history_to_keep = config.get('history_to_keep') or 500
     message_history[channel] = message_history[channel][-1 * history_to_keep:]
 
     global count_since_response
-    if not should_respond(message):
+    if not should_respond(message, channel, username):
         count_since_response += 1
         return
 
@@ -75,8 +79,12 @@ def message_handler(username, channel, message, full_user):
     last_response_time = int(time.time())
 
 
-def should_respond(message):
+def should_respond(message, channel, username):
     if botnick.upper() in message.upper():
+        return True
+
+    if channel == username:
+        # DM
         return True
 
     if config.get('respond_without_prompt'):
