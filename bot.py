@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import datetime
+import openai
 import re
 import sys
 import threading
@@ -12,23 +14,41 @@ from conf import config
 irc = IRC()
 irc.connect()
 
-HISTORY_TO_KEEP = 200
+HISTORY_TO_KEEP = 500
 
 botnick = config.get('irc', 'nick')
+openai.api_key = config.get('openai_api_key')
 
 count_since_response = 100
 last_response_time = int(time.time())
 
 message_history = {}
 
-def generate_reply(input):
-    return "test"
+def generate_reply(prompt):
+    timestamp_str = timestamp()
+    prompt += "[{botnick}] ({timestamp_str}) "
+
+    response = openai.Completion.create(
+      model="text-davinci-003",
+      prompt=prompt,
+      temperature=0.7,
+      max_tokens=64,
+      top_p=1,
+      frequency_penalty=0,
+      presence_penalty=0,
+      stop=["\n"],
+    )
+    return response
+
+def timestamp():
+    return datetime.datetime.now().strftime("%H:%M:%S")
 
 def message_handler(username, channel, message, full_user):
     global message_history
     if channel not in message_history:
         message_history[channel] = ""
-    message_history[channel] += message + "\n"
+    timestamp_str = timestamp()
+    message_history[channel] += "[{username}] ({timestamp_str}) {message}\n"
     message_history[channel] = message_history[channel][-1 * HISTORY_TO_KEEP:]
 
     global count_since_response
