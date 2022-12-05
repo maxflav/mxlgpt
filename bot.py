@@ -26,7 +26,7 @@ message_history = {}
 
 def generate_reply(prompt):
     timestamp_str = timestamp()
-    prompt += f"[{botnick}] ({timestamp_str}) "
+    prompt += f"[{botnick}] ({timestamp_str})"
 
     print(f"Getting response to prompt: {prompt}")
     response = openai.Completion.create(
@@ -41,7 +41,8 @@ def generate_reply(prompt):
     )
     print(response)
     try:
-        return response['choices'][0]['text']
+        text = response['choices'][0]['text']
+        return text.strip()
     except exception:
         traceback.print_exc()
         return None
@@ -65,8 +66,8 @@ def message_handler(username, channel, message, full_user):
     reply = generate_reply(message_history[channel])
     if reply is None:
         return
-    if botnick.upper() in message.upper():
-        reply = username + ": " + reply
+    # if botnick.upper() in message.upper():
+    #     reply = username + ": " + reply
     irc.send_to_channel(channel, reply)
 
     message_history[channel] += f"[{botnick}] ({timestamp_str}) {reply}\n"
