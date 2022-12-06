@@ -49,6 +49,9 @@ def timestamp():
     return datetime.datetime.now().strftime("%H:%M:%S")
 
 def message_handler(username, channel, message, full_user):
+    if message.startswith(config.get('command_key')) and full_user == config.get('admin'):
+        return
+
     if channel == botnick:
         channel = username
 
@@ -69,8 +72,7 @@ def message_handler(username, channel, message, full_user):
     reply = generate_reply(message_history[channel])
     if reply is None:
         return
-    # if botnick.upper() in message.upper():
-    #     reply = username + ": " + reply
+
     irc.send_to_channel(channel, reply)
 
     message_history[channel] += f"[{botnick}] ({timestamp_str}) {reply}\n"
@@ -102,6 +104,9 @@ def should_respond(message, channel, username):
     return False
 
 def admin_commands(username, channel, message, full_user):
+    if channel == botnick:
+        channel = username
+
     if full_user != config.get('admin'):
         return
 
