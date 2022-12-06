@@ -27,23 +27,26 @@ def generate_reply(prompt):
     prompt += f"[{botnick}] ({timestamp_str})"
 
     print(f"Getting response to prompt: {prompt}")
-    response = openai.Completion.create(
-      model=config.get('model') or "text-davinci-003",
-      prompt=prompt,
-      temperature=0.7,
-      max_tokens=config.get('max_tokens') or 64,
-      top_p=1,
-      frequency_penalty=0,
-      presence_penalty=0,
-      stop=["\n"],
-    )
-    print(response)
     try:
+        response = openai.Completion.create(
+          model=config.get('model') or "text-davinci-003",
+          prompt=prompt,
+          temperature=0.7,
+          max_tokens=config.get('max_tokens') or 64,
+          top_p=1,
+          frequency_penalty=0,
+          presence_penalty=0,
+          stop=["\n"],
+        )
+        print(response)
         text = response['choices'][0]['text']
         return text.strip()
-    except exception:
+    except openai.error.APIError as error:
         traceback.print_exc()
-        return None
+        return str(error)
+    except Exception as exc:
+        traceback.print_exc()
+        return str(exc)
 
 def timestamp():
     return datetime.datetime.now().strftime("%H:%M:%S")
