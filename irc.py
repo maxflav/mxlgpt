@@ -12,7 +12,7 @@ class IRC:
     listener_thread = None
     handlers = []
     message_handlers = []
-    last_message_times = []
+    last_message_times = [0]
 
     def __init__(self):
         self.irc_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
