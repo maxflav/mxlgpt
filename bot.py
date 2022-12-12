@@ -157,6 +157,7 @@ def try_random_message():
             message = generate_reply(message_history[channel])
             if message is not None:
                 irc.send_to_channel(channel, message)
+                timestamp_str = timestamp()
                 message_history[channel] += f"[{botnick}] ({timestamp_str}) {message}\n"
                 history_to_keep = config.get('history_to_keep') or 500
                 message_history[channel] = message_history[channel][-1 * history_to_keep:]
