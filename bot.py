@@ -36,7 +36,7 @@ def generate_reply(prompt):
           top_p=1,
           frequency_penalty=0,
           presence_penalty=0,
-          stop=["\n"],
+          stop=[],
         )
         print(response)
         text = response['choices'][0]['text']
@@ -76,9 +76,11 @@ def message_handler(username, channel, message, full_user):
     if reply is None:
         return
 
-    irc.send_to_channel(channel, reply)
-
-    message_history[channel] += f"[{botnick}] ({timestamp_str}) {reply}\n"
+    lines = reply.split('\n')
+    for line in lines:
+        if line:
+            irc.send_to_channel(channel, line)
+            message_history[channel] += f"[{botnick}] ({timestamp_str}) {line}\n"
 
     count_since_response = 0
     last_response_time = int(time.time())
@@ -156,9 +158,12 @@ def try_random_message():
                 continue
             message = generate_reply(message_history[channel])
             if message is not None:
-                irc.send_to_channel(channel, message)
+                lines = message.split("\n")
                 timestamp_str = timestamp()
-                message_history[channel] += f"[{botnick}] ({timestamp_str}) {message}\n"
+                for line in lines:
+                    irc.send_to_channel(channel, line)
+                    message_history[channel] += f"[{botnick}] ({timestamp_str}) {line}\n"
+
                 history_to_keep = config.get('history_to_keep') or 500
                 message_history[channel] = message_history[channel][-1 * history_to_keep:]
 
