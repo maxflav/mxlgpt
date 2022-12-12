@@ -77,10 +77,15 @@ def message_handler(username, channel, message, full_user):
         return
 
     lines = reply.split('\n')
+    what_was_sent = ""
     for line in lines:
+        line = line.strip()
         if line:
             irc.send_to_channel(channel, line)
-            message_history[channel] += f"[{botnick}] ({timestamp_str}) {line}\n"
+            what_was_sent += "\n" + line
+
+    if what_was_sent:
+        message_history[channel] += f"[{botnick}] ({timestamp_str}) {what_was_sent.strip()}\n"
 
     count_since_response = 0
     last_response_time = int(time.time())
@@ -160,9 +165,15 @@ def try_random_message():
             if message is not None:
                 lines = message.split("\n")
                 timestamp_str = timestamp()
+                what_was_sent = ""
                 for line in lines:
-                    irc.send_to_channel(channel, line)
-                    message_history[channel] += f"[{botnick}] ({timestamp_str}) {line}\n"
+                    line = line.strip()
+                    if line:
+                        irc.send_to_channel(channel, line)
+                        what_was_sent += "\n" + line
+
+                if what_was_sent:    
+                    message_history[channel] += f"[{botnick}] ({timestamp_str}) {what_was_sent.strip()}\n"
 
                 history_to_keep = config.get('history_to_keep') or 500
                 message_history[channel] = message_history[channel][-1 * history_to_keep:]
