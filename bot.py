@@ -36,7 +36,7 @@ def generate_reply(prompt):
           top_p=1,
           frequency_penalty=0,
           presence_penalty=0,
-          stop=[],
+          # stop=[],
         )
         print(response)
         text = response['choices'][0]['text']
